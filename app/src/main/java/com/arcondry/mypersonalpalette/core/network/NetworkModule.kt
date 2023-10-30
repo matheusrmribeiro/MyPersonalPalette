@@ -41,15 +41,4 @@ class NetworkModule {
             .build()
     }
 
-    @Singleton
-    @Provides
-    @Named("ApiAfyaRetrofit")
-    fun provideApiAfyaRetrofit(client: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .client(client)
-            .baseUrl(BuildConfig.BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
 }

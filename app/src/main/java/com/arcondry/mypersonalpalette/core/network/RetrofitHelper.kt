@@ -14,7 +14,6 @@ suspend fun <T> doRequest(call: suspend () -> Response<@JvmSuppressWildcards T>)
             else
                 ResponseWrapper.Error("")
         } catch (e: Exception) {
-            e
             ResponseWrapper.Error("")
         }
     }
