@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MyPersonalPalette</string>
+
+    <string name="camera_permission">Please grant the permission to use the camera to use the core functionality of this app.</string>
+    <string name="grant_permission">Grant permission</string>
+
 </resources>

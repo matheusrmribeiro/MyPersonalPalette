@@ -2,10 +2,9 @@ package com.arcondry.mypersonalpalette
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
-import javax.inject.Inject
 
 @HiltAndroidApp
-class CoreApplication @Inject constructor() : Application() {
+class CoreApplication: Application() {
 
     companion object {
         lateinit var instance: CoreApplication
