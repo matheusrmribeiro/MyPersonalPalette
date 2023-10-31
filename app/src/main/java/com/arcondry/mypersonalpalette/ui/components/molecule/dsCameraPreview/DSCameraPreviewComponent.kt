@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -44,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arcondry.mypersonalpalette.core.utils.rotateBitmap
+import com.arcondry.mypersonalpalette.ui.components.atom.DSTargetPointerComponent
 import java.util.concurrent.Executor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +58,8 @@ fun DSCameraPreviewComponent(
 
     val context: Context = LocalContext.current
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-    val cameraController: LifecycleCameraController = remember { LifecycleCameraController(context) }
+    val cameraController: LifecycleCameraController =
+        remember { LifecycleCameraController(context) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -64,12 +67,17 @@ fun DSCameraPreviewComponent(
             ExtendedFloatingActionButton(
                 text = { Text(text = "Take photo") },
                 onClick = { capturePhoto(context, cameraController, onPhotoCaptured) },
-                icon = { Icon(imageVector = Icons.Default.Camera, contentDescription = "Camera capture icon") }
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Camera,
+                        contentDescription = "Camera capture icon"
+                    )
+                }
             )
         }
     ) { paddingValues: PaddingValues ->
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             AndroidView(
                 modifier = Modifier
                     .fillMaxSize()
@@ -87,12 +95,7 @@ fun DSCameraPreviewComponent(
                 }
             )
 
-            /*if (lastCapturedPhoto != null) {
-                LastPhotoPreview(
-                    modifier = Modifier.align(alignment = BottomStart),
-                    lastCapturedPhoto = lastCapturedPhoto
-                )
-            }*/
+            DSTargetPointerComponent()
         }
     }
 }
@@ -126,7 +129,8 @@ private fun LastPhotoPreview(
     lastCapturedPhoto: Bitmap
 ) {
 
-    val capturedPhoto: ImageBitmap = remember(lastCapturedPhoto.hashCode()) { lastCapturedPhoto.asImageBitmap() }
+    val capturedPhoto: ImageBitmap =
+        remember(lastCapturedPhoto.hashCode()) { lastCapturedPhoto.asImageBitmap() }
 
     Card(
         modifier = modifier
