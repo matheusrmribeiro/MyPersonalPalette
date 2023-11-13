@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
@@ -30,7 +31,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -44,6 +47,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.arcondry.mypersonalpalette.common.domain.entities.ColorEntity
 import com.arcondry.mypersonalpalette.core.utils.rotateBitmap
 import com.arcondry.mypersonalpalette.ui.components.atom.DSTargetPointerComponent
 import java.util.concurrent.Executor
@@ -51,10 +55,12 @@ import java.util.concurrent.Executor
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DSCameraPreviewComponent(
-    onPhotoCaptured: (Bitmap) -> Unit,
+    hideButton: Boolean = true,
+    onPhotoCaptured: (Bitmap, Int) -> Unit,
 ) {
     val viewModel: CameraPreviewViewModel = hiltViewModel()
     val cameraState: CameraState by viewModel.state.collectAsStateWithLifecycle()
+    var currentColor by remember { mutableStateOf(ColorEntity.empty) }
 
     val context: Context = LocalContext.current
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
@@ -64,16 +70,18 @@ fun DSCameraPreviewComponent(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = { Text(text = "Take photo") },
-                onClick = { capturePhoto(context, cameraController, onPhotoCaptured) },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Camera,
-                        contentDescription = "Camera capture icon"
-                    )
-                }
-            )
+            if (!hideButton) {
+                ExtendedFloatingActionButton(
+                    text = { Text(text = "Take photo") },
+                    onClick = { capturePhoto(context, cameraController, onPhotoCaptured) },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Camera,
+                            contentDescription = "Camera capture icon"
+                        )
+                    }
+                )
+            }
         }
     ) { paddingValues: PaddingValues ->
 
@@ -91,19 +99,43 @@ fun DSCameraPreviewComponent(
                     }.also { previewView ->
                         previewView.controller = cameraController
                         cameraController.bindToLifecycle(lifecycleOwner)
+                        previewColor(context, cameraController) {
+                            currentColor = ColorEntity.generate(it)
+                        }
                     }
                 }
             )
 
-            DSTargetPointerComponent()
+            DSTargetPointerComponent(colorPreview = currentColor)
         }
+    }
+}
+
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
+private fun previewColor(
+    context: Context,
+    cameraController: LifecycleCameraController,
+    onFrameChanged: (Int) -> Unit
+) {
+    val mainExecutor: Executor = ContextCompat.getMainExecutor(context)
+
+    cameraController.setImageAnalysisAnalyzer(mainExecutor) { imageProxy ->
+            val correctedBitmap: Bitmap = imageProxy
+                .toBitmap()
+                .rotateBitmap(imageProxy.imageInfo.rotationDegrees)
+            val pixelColor = correctedBitmap.getPixel(
+                correctedBitmap.width / 2,
+                correctedBitmap.height / 2
+            )
+        onFrameChanged(pixelColor)
+        imageProxy.close()
     }
 }
 
 private fun capturePhoto(
     context: Context,
     cameraController: LifecycleCameraController,
-    onPhotoCaptured: (Bitmap) -> Unit
+    onPhotoCaptured: (Bitmap, Int) -> Unit
 ) {
     val mainExecutor: Executor = ContextCompat.getMainExecutor(context)
 
@@ -112,8 +144,11 @@ private fun capturePhoto(
             val correctedBitmap: Bitmap = image
                 .toBitmap()
                 .rotateBitmap(image.imageInfo.rotationDegrees)
-
-            onPhotoCaptured(correctedBitmap)
+            val pixelColor = correctedBitmap.getPixel(
+                correctedBitmap.width / 2,
+                correctedBitmap.height / 2
+            )
+            onPhotoCaptured(correctedBitmap, pixelColor)
             image.close()
         }
 
@@ -153,7 +188,7 @@ private fun LastPhotoPreview(
 @Composable
 private fun PreviewComponent() {
     val context = LocalContext.current
-    DSCameraPreviewComponent() {
+    DSCameraPreviewComponent() { _, _ ->
         Toast.makeText(context, "Preview", Toast.LENGTH_LONG).show()
     }
 }

@@ -1,5 +1,6 @@
 package com.arcondry.mypersonalpalette.ui.components.organism
 
+import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
@@ -16,14 +17,17 @@ import com.google.accompanist.permissions.rememberPermissionState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun DSLivePickerComponent() {
+fun DSPickerComponent(
+    onPickerCallback: (Bitmap, Int) -> Unit
+) {
 
     val cameraPermissionState: PermissionState =
         rememberPermissionState(android.Manifest.permission.CAMERA)
 
     MainContent(
         hasPermission = cameraPermissionState.status.isGranted,
-        onRequestPermission = cameraPermissionState::launchPermissionRequest
+        onRequestPermission = cameraPermissionState::launchPermissionRequest,
+        onPickerCallback = onPickerCallback
     )
 
 }
@@ -31,14 +35,11 @@ fun DSLivePickerComponent() {
 @Composable
 private fun MainContent(
     hasPermission: Boolean,
-    onRequestPermission: () -> Unit
+    onRequestPermission: () -> Unit,
+    onPickerCallback: (Bitmap, Int) -> Unit
 ) {
-    val context = LocalContext.current
-
     if (hasPermission) {
-        DSCameraPreviewComponent() {
-            Toast.makeText(context, "Captured", Toast.LENGTH_LONG).show()
-        }
+        DSCameraPreviewComponent(onPhotoCaptured = onPickerCallback)
     } else {
         DSNoPermissionComponent(
             icon = Icons.Default.Camera,
@@ -51,5 +52,8 @@ private fun MainContent(
 @Preview
 @Composable
 private fun PreviewComponent() {
-    DSLivePickerComponent()
+    val context = LocalContext.current
+    DSPickerComponent() { _, _ ->
+        Toast.makeText(context, "Preview", Toast.LENGTH_LONG).show()
+    }
 }

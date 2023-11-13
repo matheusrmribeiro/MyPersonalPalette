@@ -17,8 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.arcondry.mypersonalpalette.ui.components.molecule.dsCameraPreview.DSCameraPreviewComponent
-import com.arcondry.mypersonalpalette.ui.components.organism.DSLivePickerComponent
+import com.arcondry.mypersonalpalette.features.livepicker.LivePickerPage
 import com.arcondry.mypersonalpalette.ui.theme.MyPersonalPaletteTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -61,7 +60,7 @@ private fun ReaderNavigation() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "Home") {
         composable("Home") {
-            DSLivePickerComponent()
+            LivePickerPage()
         }
     }
 }
