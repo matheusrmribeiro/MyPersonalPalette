@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
@@ -44,7 +45,7 @@ fun DSTargetPointerComponent(
         isExpanded = false
     }
 
-    BoxWithConstraints(contentAlignment = Alignment.Center) {
+    BoxWithConstraints(contentAlignment = Alignment.Center, modifier = Modifier.size(160.dp).background(Color.Blue)) {
         val previewPosX = maxWidth / 2
         val previewPosY = (maxHeight / 2) + 20.dp
         Canvas(
