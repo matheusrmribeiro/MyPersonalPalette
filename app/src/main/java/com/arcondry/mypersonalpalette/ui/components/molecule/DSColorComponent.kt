@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arcondry.mypersonalpalette.common.domain.entities.ColorEntity
@@ -23,11 +24,13 @@ import com.arcondry.mypersonalpalette.common.domain.entities.ColorEntity
 @Composable
 fun DSColorComponent(
     modifier: Modifier = Modifier,
-    colorObject: ColorEntity
+    colorObject: ColorEntity,
+    height: Dp = 50.dp,
+    width: Dp = 50.dp,
 ) {
     Box(
         modifier = modifier
-            .size(50.dp),
+            .size(width = width, height = height),
         contentAlignment = Alignment.Center
     ) {
         Canvas(

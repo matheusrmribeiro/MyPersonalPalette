@@ -15,6 +15,7 @@ import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -41,6 +42,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -85,7 +87,7 @@ fun DSCameraPreviewComponent(
         }
     ) { paddingValues: PaddingValues ->
 
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             AndroidView(
                 modifier = Modifier
                     .fillMaxSize()
@@ -99,7 +101,11 @@ fun DSCameraPreviewComponent(
                     }.also { previewView ->
                         previewView.controller = cameraController
                         cameraController.bindToLifecycle(lifecycleOwner)
-                        previewColor(context, cameraController) {
+                        previewColor(
+                            context,
+                            cameraController,
+                            maxWidth.value.toInt(),
+                            maxHeight.value.toInt()) {
                             currentColor = ColorEntity.generate(it)
                         }
                     }
@@ -115,6 +121,8 @@ fun DSCameraPreviewComponent(
 private fun previewColor(
     context: Context,
     cameraController: LifecycleCameraController,
+    previewWidth: Int,
+    previewHeight: Int,
     onFrameChanged: (Int) -> Unit
 ) {
     val mainExecutor: Executor = ContextCompat.getMainExecutor(context)
@@ -123,9 +131,13 @@ private fun previewColor(
             val correctedBitmap: Bitmap = imageProxy
                 .toBitmap()
                 .rotateBitmap(imageProxy.imageInfo.rotationDegrees)
+            val diffWidth = previewWidth.toDouble() / correctedBitmap.width.toDouble()
+            val diffHeight = previewHeight.toDouble() / correctedBitmap.height.toDouble()
+            val posX = (correctedBitmap.width * diffWidth) /  2
+            val posY = (correctedBitmap.height * diffHeight) / 2
             val pixelColor = correctedBitmap.getPixel(
-                correctedBitmap.width / 2,
-                correctedBitmap.height / 2
+                posX.toInt(),
+                posY.toInt()
             )
         onFrameChanged(pixelColor)
         imageProxy.close()
