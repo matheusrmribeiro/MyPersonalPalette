@@ -38,7 +38,7 @@ fun DSTargetPointerComponent(
 ) {
     var isExpanded by remember { mutableStateOf(true) }
     val scale: Float by animateFloatAsState(
-        if (isExpanded) 2f else 0.5f,
+        if (isExpanded) 2f else 1f,
         label = "Scale Animation",
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1000, easing = LinearEasing),
