@@ -3,13 +3,10 @@ package com.arcondry.mypersonalpalette.ui.components.molecule.dsCameraPreview
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Matrix
 import android.util.Log
 import android.util.Size
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -19,72 +16,53 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.core.resolutionselector.ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
-import androidx.camera.core.Preview as CameraPreview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
-import com.arcondry.mypersonalpalette.common.domain.entities.ColorEntity
 import com.arcondry.mypersonalpalette.core.utils.rotateBitmap
 import com.arcondry.mypersonalpalette.ui.components.atom.DSTargetPointerComponent
+import com.arcondry.mypersonalpalette.ui.components.organism.dsPickerComponent.DSPickerComponentController
 import java.util.concurrent.Executor
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.camera.core.Preview as CameraPreview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DSCameraPreviewComponent(
-    hideButton: Boolean = true,
-    onPhotoCaptured: (Bitmap, Int) -> Unit,
+    controller: DSPickerComponentController
 ) {
     val viewModel: CameraPreviewViewModel = hiltViewModel()
-    var currentColor by remember { mutableStateOf(ColorEntity.empty) }
+    val currentColor by viewModel.currentColor.collectAsState()
 
     val context: Context = LocalContext.current
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     val cameraController: LifecycleCameraController =
         remember { LifecycleCameraController(context) }
 
+    controller.setTakeColorAction {
+        return@setTakeColorAction currentColor
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        floatingActionButton = {
-            if (!hideButton) {
-                ExtendedFloatingActionButton(
-                    text = { Text(text = "Take photo") },
-                    onClick = { capturePhoto(context, cameraController, onPhotoCaptured) },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.Camera,
-                            contentDescription = "Camera capture icon"
-                        )
-                    }
-                )
-            }
-        }
     ) { paddingValues: PaddingValues ->
 
         Box(
@@ -107,7 +85,7 @@ fun DSCameraPreviewComponent(
                     }
 
                     val analyserUseCase = setImageAnalysis(context) {
-                        currentColor = ColorEntity.generate(it)
+                        viewModel.updateCurrentColor(it)
                     }
 
                     val camera = cameraProviderFuture.get().bindToLifecycle(
@@ -169,7 +147,7 @@ private fun setImageAnalysis(
     return imageAnalysis
 }
 
-private fun capturePhoto(
+private fun captureImage(
     context: Context,
     cameraController: LifecycleCameraController,
     onPhotoCaptured: (Bitmap, Int) -> Unit
@@ -199,7 +177,6 @@ private fun capturePhoto(
 @Composable
 private fun PreviewComponent() {
     val context = LocalContext.current
-    DSCameraPreviewComponent() { _, _ ->
-        Toast.makeText(context, "Preview", Toast.LENGTH_LONG).show()
-    }
+    val controller = DSPickerComponentController()
+    DSCameraPreviewComponent(controller)
 }

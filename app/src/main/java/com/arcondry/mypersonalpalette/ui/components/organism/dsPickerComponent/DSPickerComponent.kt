@@ -1,7 +1,5 @@
-package com.arcondry.mypersonalpalette.ui.components.organism
+package com.arcondry.mypersonalpalette.ui.components.organism.dsPickerComponent
 
-import android.graphics.Bitmap
-import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.runtime.Composable
@@ -18,7 +16,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun DSPickerComponent(
-    onPickerCallback: (Bitmap, Int) -> Unit
+    controller: DSPickerComponentController,
 ) {
 
     val cameraPermissionState: PermissionState =
@@ -27,7 +25,7 @@ fun DSPickerComponent(
     MainContent(
         hasPermission = cameraPermissionState.status.isGranted,
         onRequestPermission = cameraPermissionState::launchPermissionRequest,
-        onPickerCallback = onPickerCallback
+        controller = controller
     )
 
 }
@@ -36,10 +34,10 @@ fun DSPickerComponent(
 private fun MainContent(
     hasPermission: Boolean,
     onRequestPermission: () -> Unit,
-    onPickerCallback: (Bitmap, Int) -> Unit
+    controller: DSPickerComponentController,
 ) {
     if (hasPermission) {
-        DSCameraPreviewComponent(onPhotoCaptured = onPickerCallback)
+        DSCameraPreviewComponent(controller = controller)
     } else {
         DSNoPermissionComponent(
             icon = Icons.Default.Camera,
@@ -53,7 +51,6 @@ private fun MainContent(
 @Composable
 private fun PreviewComponent() {
     val context = LocalContext.current
-    DSPickerComponent() { _, _ ->
-        Toast.makeText(context, "Preview", Toast.LENGTH_LONG).show()
-    }
+    val controller = DSPickerComponentController()
+    DSPickerComponent(controller)
 }

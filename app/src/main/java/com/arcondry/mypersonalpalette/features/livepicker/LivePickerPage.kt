@@ -19,37 +19,46 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arcondry.mypersonalpalette.common.domain.entities.ColorEntity
 import com.arcondry.mypersonalpalette.ui.components.molecule.DSColorComponent
-import com.arcondry.mypersonalpalette.ui.components.organism.DSPickerComponent
+import com.arcondry.mypersonalpalette.ui.components.organism.dsPickerComponent.DSPickerComponent
+import com.arcondry.mypersonalpalette.ui.components.organism.dsPickerComponent.DSPickerComponentController
 
 @Composable
 fun LivePickerPage() {
     val viewModel: LivePickerViewModel = hiltViewModel()
     val colorsState: List<ColorEntity> by viewModel.colors.collectAsStateWithLifecycle()
 
+    val pickerController = DSPickerComponentController()
+
     Box(
         modifier = Modifier,
         contentAlignment = Alignment.BottomCenter
     ) {
-        DSPickerComponent() { _, color ->
-            viewModel.addColor(color)
-        }
-        Row {
+        DSPickerComponent(pickerController)
+        Row() {
             LazyRow(
-                modifier = Modifier.fillMaxWidth().padding(8.dp)
+                modifier = Modifier
+                    .weight(1f, true)
+                    .padding(8.dp)
             ) {
                 items(colorsState) { item ->
                     DSColorComponent(colorObject = item)
                 }
             }
-            /*Button(
-                onClick = { viewModel.addColor(color) },
+            Button(
+                onClick = {
+                    pickerController.takeCurrentColor?.let { color ->
+                        viewModel.addColor(
+                            color
+                        )
+                    }
+                },
                 content = {
                     Icon(
                         imageVector = Icons.Default.Camera,
                         contentDescription = "Camera capture icon"
                     )
                 }
-            )*/
+            )
         }
     }
 }
